@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioQuest - FaBiologia</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1b4d3e, #0f2e25);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: #ffffff;
+            color: #333;
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            text-align: center;
+        }
+        h1 {
+            color: #1b4d3e;
+            margin-bottom: 5px;
+            font-size: 28px;
+        }
+        .subtitle {
+            font-size: 15px;
+            color: #555;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        .btn {
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background-color: #1b5e20;
+        }
+        .option-btn {
+            background-color: #f0f4f1;
+            color: #333;
+            border: 2px solid #d0ded3;
+            padding: 14px;
+            font-size: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            text-align: left;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .option-btn:hover:not(:disabled) {
+            background-color: #d8e6dc;
+            border-color: #2e7d32;
+        }
+        .option-btn.correct {
+            background-color: #c8e6c9 !important;
+            border-color: #4caf50 !important;
+            color: #1b5e20 !important;
+        }
+        .option-btn.wrong {
+            background-color: #ffcdd2 !important;
+            border-color: #f44336 !important;
+            color: #b71c1c !important;
+        }
+        #question-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #222;
+            text-align: left;
+        }
+        .hide {
+            display: none !important;
+        }
+        .message-box {
+            font-size: 17px;
+            line-height: 1.6;
+            margin: 20px 0;
+            color: #333;
+        }
+        .stats-box {
+            background: #f8f9fa;
+            border-left: 4px solid #2e7d32;
+            padding: 12px;
+            margin: 15px 0;
+            text-align: left;
+            border-radius: 4px;
+            font-size: 15px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- TELA INICIAL -->
+        <div id="home-screen">
+            <h1>🧬 BioQuest</h1>
+            <div class="subtitle">FaBiologia - O Desafio Definitivo</div>
+            <p>Enfrente 50 questões divididas em 5 Fases eletrizantes. Prove que você domina a Biologia!</p>
+            <button class="btn" onclick="startGame()">🚀 Iniciar Jornada</button>
+        </div>
+
+        <!-- TELA DO JOGO -->
+        <div id="game-screen" class="hide">
+            <div id="phase-badge" class="badge">Fase 1 - Nível Iniciante</div>
+            <div id="question-text">Carregando pergunta...</div>
+            <div id="options-container"></div>
+        </div>
+
+        <!-- TELA DE TRANSIÇÃO DE FASE -->
+        <div id="transition-screen" class="hide">
+            <h1>🎉 Parabéns!</h1>
+            <div id="transition-msg" class="message-box"></div>
+            <div id="phase-stats" class="stats-box"></div>
+            <button class="btn" onclick="proceedNextPhase()">Avançar para a Próxima Fase ➔</button>
+        </div>
+
+        <!-- TELA FINAL -->
+        <div id="end-screen" class="hide">
+            <h1>🏆 Mestre em Biologia!</h1>
+            <div class="message-box">
+                <p><b>Muito bom! Você é mestre em Biologia!</b></p>
+                <div id="final-stats" class="stats-box" style="text-align: center;"></div>
+            </div>
+            <button class="btn" onclick="startGame()">🔄 Jogar Novamente</button>
+        </div>
+    </div>
+
+    <script>
+        const allQuestions = [
+            // FASE 1: Citologia e Bioquímica (1 a 10)
+            {q: "Qual organela celular é responsável pela respiração celular e produção de ATP?", opts: ["Complexo de Golgi", "Mitocôndria", "Ribossomo", "Lisossomo"], ans: 1},
+            {q: "Qual organela atua na digestão intracelular?", opts: ["Lisossomo", "Cloroplasto", "Centríolo", "Retículo Endoplasmático"], ans: 0},
+            {q: "O principal componente orgânico da parede celular dos vegetais é a:", opts: ["Quitina", "Celulose", "Glicose", "Amido"], ans: 1},
+            {q: "A organela responsável pela síntese de proteínas na célula é o:", opts: ["Ribossomo", "Peroxissomo", "Centríolo", "Mitocôndria"], ans: 0},
+            {q: "O transporte passivo que ocorre a favor do gradiente de concentração sem gasto de energia é:", opts: ["Pinocitose", "Fagocitose", "Difusão", "Bomba de Sódio-Potássio"], ans: 2},
+            {q: "Qual molécula armazena a informação genética principal nos eucariotos?", opts: ["RNA", "DNA", "ATP", "Proteína"], ans: 1},
+            {q: "O processo de armazenamento e secreção de substâncias é função predominante do:", opts: ["Complexo de Golgi", "Ribossomo", "Lisossomo", "Centrossomo"], ans: 0},
+            {q: "Substância orgânica de reserva energética encontrada em animais:", opts: ["Amido", "Celulose", "Glicogênio", "Quitina"], ans: 2},
+            {q: "A estrutura celular presente em células vegetais que armazena água e substâncias é:", opts: ["Vacúolo central", "Centríolo", "Lisossomo", "Flagelo"], ans: 0},
+            {q: "O organóide exclusivo de células animais e vegetais inferiores ligado à divisão celular é o:", opts: ["Centríolo", "Cloroplasto", "Parede celular", "Ribossomo"], ans: 0},
+
+            // FASE 2: Genética e Biologia Molecular (11 a 20)
+            {q: "A base nitrogenada que se emparelha exclusivamente com a Adenina no DNA é a:", opts: ["Timina", "Citosina", "Guanina", "Uracila"], ans: 0},
+            {q: "O conjunto de todos os genes de um organismo constitui o seu:", opts: ["Fenótipo", "Genótipo", "Cariótipo", "Alelo"], ans: 1},
+            {q: "A organela ou processo onde ocorre a transcrição do DNA para o RNA mensageiro é no:", opts: ["Citoplasma", "Ribossomo", "Núcleo", "Complexo de Golgi"], ans: 2},
+            {q: "A divisão celular que origina células reprodutivas (gametas) com metade dos cromossomos é:", opts: ["Mitose", "Meiose", "Clivagem", "Gemulação"], ans: 1},
+            {q: "Quando um alelo se manifesta mesmo em dose simples (heterozigoto), ele é chamado de:", opts: ["Recessivo", "Dominante", "Mutante", "Ligado ao X"], ans: 1},
+            {q: "A alteração brusca no material genético que pode gerar variabilidade é a:", opts: ["Mutação", "Transcrição", "Tradução", "Duplicação"], ans: 0},
+            {q: "O tipo de ácido nucleico que contém a fita simples e a base Uracila é o:", opts: ["DNA", "RNA", "ATP", "Plasmídeo"], ans: 1},
+            {q: "A Primeira Lei de Mendel também é conhecida como:", opts: ["Segregação Independente", "Pureza dos Gametas", "Dominância Incompleta", "Ligação Gênica"], ans: 1},
+            {q: "Indivíduos que possuem dois alelos iguais para uma característica são chamados de:", opts: ["Heterozigotos", "Homozigotos", "Híbridos", "Mutantes"], ans: 1},
+            {q: "A trinca de nucleotídeos no RNA mensageiro que codifica um aminoácido chama-se:", opts: ["Códon", "Anticódon", "Intrão", "Exon"], ans: 0},
+
+            // FASE 3: Ecologia e Meio Ambiente (21 a 30)
+            {q: "O papel funcional que uma espécie desempenha no ecossistema é o seu:", opts: ["Habitat", "Nicho ecológico", "Bioma", "Ecótono"], ans: 1},
+            {q: "A relação interespecífica harmônica onde ambas as espécies se beneficiam e podem viver separadas é:", opts: ["Mutualismo", "Protocooperação", "Comensalismo", "Parasitismo"], ans: 1},
+            {q: "O conjunto de todos os ecossistemas da Terra forma a:", opts: ["Litosfera", "Biosfera", "Atmosfera", "Comunidade"], ans: 1},
+            {q: "O acúmulo progressivo de substâncias tóxicas ao longo dos níveis tróficos é chamado de:", opts: ["Eutrofização", "Magnificação trófica", "Sucessão ecológica", "Inversão térmica"], ans: 1},
+            {q: "Relação desarmônica onde uma espécie elimina a outra por competição por recursos:", opts: ["Canibalismo", "Amensalismo", "Competição interespecífica", "Predatismo"], ans: 2},
+            {q: "Bactérias e fungos que atuam na decomposição da matéria orgânica ocupam qual papel na cadeia?", opts: ["Produtores", "Consumidores primários", "Decompositores", "Herbívoros"], ans: 2},
+            {q: "O enriquecimento excessivo de nutrientes em corpos d'água causando proliferação de algas é:", opts: ["Eutrofização", "Chuva ácida", "Bioconcentração", "Desertificação"], ans: 0},
+            {q: "A sucessão ecológica que se inicia em um local sem nenhuma vida anterior (ex: rocha nua) chama-se:", opts: ["Secundária", "Primária", "Clímax", "Trofobiótica"], ans: 1},
+            {q: "O bioma brasileiro caracterizado por árvores tortuosas e solo ácido é o:", opts: ["Pampa", "Caatinga", "Cerrado", "Mata de Araucárias"], ans: 2},
+            {q: "Organismos autotróficos que realizam fotossíntese na base da cadeia alimentar são:", opts: ["Consumidores", "Produtores", "Parasitas", "Decompositores"], ans: 1},
+
+            // FASE 4: Fisiologia Humana (31 a 40)
+            {q: "O órgão responsável pela filtragem do sangue e formação da urina no corpo humano é o:", opts: ["Fígado", "Pâncreas", "Rim", "Coração"], ans: 2},
+            {q: "O principal gás transportado pelas hemácias no sangue dos vertebrados é o:", opts: ["Gás nitrogênio", "Oxigênio", "Monóxido de carbono", "Metano"], ans: 1},
+            {q: "O hormônio produzido pelo pâncreas que reduz a glicose no sangue é a:", opts: ["Insulina", "Adrenalina", "Tireoxina", "Cortisol"], ans: 0},
+            {q: "A estrutura do sistema respiratório onde ocorrem as trocas gasosas (hematose) é o:", opts: ["Brônquio", "Traqueia", "Alvéolo pulmonar", "Laringe"], ans: 2},
+            {q: "O local onde se inicia a digestão do amido (carboidratos) na boca é através da enzima:", opts: ["Pepsina", "Amilase salivar (ptialina)", "Lipase", "Tripsina"], ans: 1},
+            {q: "As células do sangue responsáveis pela defesa imunológica do organismo são os:", opts: ["Hemácias", "Leucócitos", "Plaquetas", "Trombócitos"], ans: 1},
+            {q: "O vaso sanguíneo que transporta sangue rico em oxigênio do coração para o corpo é a:", opts: ["Veia cava", "Artéria aorta", "Artéria pulmonar", "Veia pulmonar"], ans: 1},
+            {q: "A glândula conhecida como 'glândula mestre' por controlar as demás glândulas é a:", opts: ["Tireoide", "Hipófise", "Suprarrenal", "Pineal"], ans: 1},
+            {q: "O principal órgão responsável pela desintoxicação do sangue e produção de bile é o:", opts: ["Fígado", "Estômago", "Baço", "Intestino delgado"], ans: 0},
+            {q: "O movimento peristáltico ocorre principalmente no:", opts: ["Sistema nervoso", "Trato digestório", "Sistema circulatório", "Esqueleto"], ans: 1},
+
+            // FASE 5: Evolução, Zoologia e Diversidade (41 a 50)
+            {q: "A teoria evolutiva baseada na seleção natural foi proposta por:", opts: ["Jean-Baptiste Lamarck", "Charles Darwin", "Gregor Mendel", "Louis Pasteur"], ans: 1},
+            {q: "Órgãos que possuem a mesma origem embrionária, mas funções diferentes, são chamados de:", opts: ["Análogos", "Homólogos", "Vestigiais", "Convergentes"], ans: 1},
+            {q: "O filo animal que inclui as esponjas do mar, caracterizadas por poros corporais, é o:", opts: ["Cnidários", "Poríferos", "Platelmintos", "Moluscos"], ans: 1},
+            {q: "Os primeiros vertebrados a conquistar definitivamente o ambiente terrestre foram os:", opts: ["Anfíbios", "Répteis", "Peixes", "Mamíferos"], ans: 1},
+            {q: "A característica exclusiva dos mamíferos que lhes dá o nome é a presença de:", opts: ["Placenta", "Glândulas mamárias", "Pêlos", "Sangue quente"], ans: 1},
+            {q: "O processo evolutivo onde espécies diferentes desenvolvem estruturas semelhantes devido ao ambiente é:", opts: ["Irradiação adaptativa", "Convergência evolutiva", "Deriva genética", "Especiaria simpátrica"], ans: 1},
+            {q: "Animais que possuem simetria bilateral e corpo segmentado (como minhocas e sanguessugas) pertencem ao filo:", opts: ["Nematódeos", "Anelídeos", "Artrópodes", "Equinodermos"], ans: 1},
+            {q: "A estrutura de locomoção e captura de alimento típica das amebas é o:", opts: ["Flagelo", "Cílio", "Pseudópode", "Esporo"], ans: 2},
+            {q: "O grupo de plantas que não possui vasos condutores de seiva (ex: briófitas) caracteriza-se por ser:", opts: ["De pequeno porte", "De grande porte", "Com sementes", "Com frutos"], ans: 0},
+            {q: "A estrutura reprodutiva exclusiva das angiospermas é a:", opts: ["Semente", "Flor", "Estróbilo", "Esporo"], ans: 1}
+        ];
+
+        let currentPhase = 0;
+        let questionIndexInPhase = 0;
+        let score = 0;
+        let totalErrors = 0;
+        let phaseCorrect = 0;
+        let phaseErrors = 0;
+        let phaseQuestions = [];
+
+        const homeScreen = document.getElementById('home-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const transitionScreen = document.getElementById('transition-screen');
+        const endScreen = document.getElementById('end-screen');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const phaseBadge = document.getElementById('phase-badge');
+        const transitionMsg = document.getElementById('transition-msg');
+        const phaseStats = document.getElementById('phase-stats');
+        const finalStats = document.getElementById('final-stats');
+
+        function startGame() {
+            currentPhase = 0;
+            score = 0;
+            totalErrors = 0;
+            homeScreen.classList.add('hide');
+            endScreen.classList.add('hide');
+            transitionScreen.classList.add('hide');
+            loadPhase();
+        }
+
+        function loadPhase() {
+            const start = currentPhase * 10;
+            phaseQuestions = allQuestions.slice(start, start + 10);
+            questionIndexInPhase = 0;
+            phaseCorrect = 0;
+            phaseErrors = 0;
+            
+            gameScreen.classList.remove('hide');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const currentQ = phaseQuestions[questionIndexInPhase];
+            phaseBadge.innerText = `Fase ${currentPhase + 1} de 5 — Questão ${questionIndexInPhase + 1}/10`;
+            questionText.innerText = currentQ.q;
+            optionsContainer.innerHTML = '';
+
+            currentQ.opts.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => selectOption(index, currentQ.ans, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectOption(selectedIndex, correctIndex, buttonElement) {
+            const allBtns = optionsContainer.getElementsByTagName('button');
+            for (let b of allBtns) {
+                b.disabled = true;
+            }
+
+            if (selectedIndex === correctIndex) {
+                buttonElement.classList.add('correct');
+                score += 10;
+                phaseCorrect++;
+            } else {
+                buttonElement.classList.add('wrong');
+                allBtns[correctIndex].classList.add('correct');
+                totalErrors++;
+                phaseErrors++;
+            }
+
+            setTimeout(() => {
+                questionIndexInPhase++;
+                if (questionIndexInPhase < phaseQuestions.length) {
+                    showQuestion();
+                } else {
+                    showPhaseTransition();
+                }
+            }, 1200);
+        }
+
+        function showPhaseTransition() {
+            gameScreen.classList.add('hide');
+            
+            if (currentPhase < 4) {
+                transitionMsg.innerHTML = `Você concluiu a <b>Fase ${currentPhase + 1}</b> com sucesso! Veja seu desempenho nesta etapa:`;
+                phaseStats.innerHTML = `✅ Acertos: <b>${phaseCorrect}</b><br>❌ Erros: <b>${phaseErrors}</b>`;
+                transitionScreen.classList.remove('hide');
+            } else {
+                endScreen.classList.remove('hide');
+                finalStats.innerHTML = `
+                    Pontuação Total: <b>${score} de 500 pontos</b><br><br>
+                    🟢 Total de Acertos: <b>${score / 10}</b><br>
+                    🔴 Total de Erros: <b>${totalErrors}</b>
+                `;
+            }
+        }
+
+        function proceedNextPhase() {
+            currentPhase++;
+            transitionScreen.classList.add('hide');
+            loadPhase();
+        }
+    </script>
+</body>
+</html>
